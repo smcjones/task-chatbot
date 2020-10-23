@@ -1,0 +1,9 @@
+{
+  "timeZone": "America/New_York",
+  "dependencies": {
+  },
+  "chat": {
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8"
+}
