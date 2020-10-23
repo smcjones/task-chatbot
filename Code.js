@@ -112,6 +112,7 @@ function buildTaskRows(tasks) {
 
 function onCardClick(event) {
   console.log(event.action.parameters);
+  return {"text" : "Your task was scheduled successfully!"}
 }
 /**
  * Responds to an ADDED_TO_SPACE event in Hangouts Chat.
