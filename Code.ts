@@ -4,16 +4,16 @@
  *
  * @param {Object} event the event object from Hangouts Chat
  */
-import {TaskApp, BucketedTasks} from "./Tasks";
+import {listTaskLists, BucketedTasks} from "./Tasks";
 
 function onMessage(event: any) {
-  var taskListBuckets: BucketedTasks = TaskApp.listTaskLists();
+  var taskListBuckets: BucketedTasks = listTaskLists();
   let card = buildCard(taskListBuckets);
   // console.log(card);
   return card;
 }
 
-function buildCard(taskListBuckets: TaskList) {
+function buildCard(taskListBuckets: BucketedTasks) {
   const card = {
     "cards": [
       {
@@ -37,7 +37,7 @@ function buildCardHeader(): Header {
 /**
  * Builds the sections of a card
 */
-function buildCardSections(taskListBuckets: TaskList) {
+function buildCardSections(taskListBuckets: BucketedTasks) {
   let sections = buildSectionTaskListWidgets(taskListBuckets);
   //let scheduleAllButton = buildButtonWidget("Schedule All", "test", []);
   //sections.push(scheduleAllButton)
@@ -72,23 +72,22 @@ function buildButton(text, action, parameters) {
 }
 
 function buildSectionTaskListWidgets(taskListBuckets: BucketedTasks) {
-  let widgets = [];
-  let noDueDate = taskListBuckets.noDueDate || [];
-  let dueLater = taskListBuckets.dueLater || [];
-  let dueSoon = taskListBuckets.dueSoon || [];
-  let pastDue = taskListBuckets.pastDue || [];
-  let dueSoonTasks = buildTaskRows(dueSoon);
-  let pastDueTasks = buildTaskRows(pastDue);
-  let noDueDateTasks = buildTaskRows(noDueDate);
-  let widgetsContainer = {
-    "header": "Tasks",
-    "widgets": []
-  };
-  widgetsContainer.widgets.concat(dueSoonTasks);
-  widgetsContainer.widgets.concat(pastDueTasks);
-  widgetsContainer.widgets.concat(noDueDateTasks);
-  widgets.push(widgetsContainer);
-  return widgets;
+    var widgets = [];
+    var allTasks = [];
+    var noDueDate = taskListBuckets.noDueDate || [];
+    var dueLater = taskListBuckets.dueLater || [];
+    var dueSoon = taskListBuckets.dueSoon || [];
+    var pastDue = taskListBuckets.pastDue || [];
+    var dueSoonTasks = buildTaskRows(dueSoon);
+    var pastDueTasks = buildTaskRows(pastDue);
+    var noDueDateTasks = buildTaskRows(noDueDate);
+    allTasks = allTasks.concat(dueSoonTasks, pastDueTasks, noDueDateTasks);
+    var widgetsContainer = {
+        "header": "Tasks",
+        "widgets": allTasks
+    };
+    widgets.push(widgetsContainer);
+    return widgets;
 }
 
 /**
@@ -97,19 +96,35 @@ function buildSectionTaskListWidgets(taskListBuckets: BucketedTasks) {
  * @param {List} tasks a list of tasks from the Tasks API
  */
 function buildTaskRows(tasks) {
-  const tasksList = tasks.map(function(t){
-    let taskElement = {
+  const tasksList = tasks.map(function (t) {
+    const messages = [
+      t.getNotes() ? "Description: " + t.getNotes() : "",
+      "Due Date: " + (t.due || "No Due Date"),
+    ];
+    const taskElement = {
       "keyValue": {
         "icon": "DESCRIPTION",
-        "topLabel": `${t.name} - ${t.id}`,
-        "content": `<b>Description:</b> ${t.description} <br> Date: ${t.date}`
-      },
-      "button": buildButton("Schedule", "test2", [])
-    }
-    return taskElement
+        "topLabel": `${t.title}`,
+        "content":  messages.filter(v => v).join('<BR>'),
+        "button": buildButton("Schedule", "test2", [{
+          key: "title",
+          value: t.title,
+        },
+        {
+          key: "date",
+          value: t.due,  
+        }])
+      }
+    };
+    return taskElement;
   });
-  return tasksList;
+  return tasksList;;
 }
+
+function onCardClick(event: any) {
+  console.log(event);
+}
+
 
 /**
  * Responds to an ADDED_TO_SPACE event in Hangouts Chat.

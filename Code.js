@@ -1,7 +1,7 @@
 // Compiled using ts2gas 3.6.3 (TypeScript 3.9.7)
-//var exports = exports || {};
-//var module = module || { exports: exports };
-//import {TaskApp, BucketedTasks} from "./Tasks";
+var exports = exports || {};
+var module = module || { exports: exports };
+//import {listTaskLists, BucketedTasks} from "./Tasks";
 function onMessage(event) {
     var taskListBuckets = listTaskLists();
     var card = buildCard(taskListBuckets);
@@ -32,7 +32,7 @@ function buildCardHeader() {
 */
 function buildCardSections(taskListBuckets) {
     var sections = buildSectionTaskListWidgets(taskListBuckets);
-    let scheduleAllButton = buildButtonWidget("Schedule All", "test", []);
+    //let scheduleAllButton = buildButtonWidget("Schedule All", "test", []);
     //sections.push(scheduleAllButton)
     return sections;
 }
@@ -63,6 +63,7 @@ function buildButton(text, action, parameters) {
 }
 function buildSectionTaskListWidgets(taskListBuckets) {
     var widgets = [];
+    var allTasks = [];
     var noDueDate = taskListBuckets.noDueDate || [];
     var dueLater = taskListBuckets.dueLater || [];
     var dueSoon = taskListBuckets.dueSoon || [];
@@ -70,13 +71,11 @@ function buildSectionTaskListWidgets(taskListBuckets) {
     var dueSoonTasks = buildTaskRows(dueSoon);
     var pastDueTasks = buildTaskRows(pastDue);
     var noDueDateTasks = buildTaskRows(noDueDate);
+    allTasks = allTasks.concat(dueSoonTasks, pastDueTasks, noDueDateTasks);
     var widgetsContainer = {
         "header": "Tasks",
-        "widgets": noDueDateTasks
+        "widgets": allTasks
     };
-    //widgetsContainer.widgets.concat(dueSoonTasks);
-    //widgetsContainer.widgets.concat(pastDueTasks);
-    //widgetsContainer.widgets.concat(noDueDateTasks);
     widgets.push(widgetsContainer);
     return widgets;
 }
@@ -86,18 +85,33 @@ function buildSectionTaskListWidgets(taskListBuckets) {
  * @param {List} tasks a list of tasks from the Tasks API
  */
 function buildTaskRows(tasks) {
-    var tasksList = tasks.map(function (t) {
-        var taskElement = {
-            "keyValue": {
-                "icon": "DESCRIPTION",
-                "topLabel": `${t.title}`,
-                "content": "Description: " + t.getNotes() + " <br> Due date: " + t.due,
-                "button": buildButton("Schedule", "test2", [])
-            }
-        };
-        return taskElement;
-    });
-    return tasksList;
+  const tasksList = tasks.map(function (t) {
+    const messages = [
+      t.getNotes() ? "Description: " + t.getNotes() : "",
+      "Due Date: " + t.due || "No Due Date",
+    ];
+    const taskElement = {
+      "keyValue": {
+        "icon": "DESCRIPTION",
+        "topLabel": `${t.title}`,
+        "content":  messages.filter(v => v).join('<BR>'),
+        "button": buildButton("Schedule", "test2", [{
+          key: "title",
+          value: t.title,
+        },
+        {
+          key: "date",
+          value: t.due,  
+        }])
+      }
+    };
+    return taskElement;
+  });
+  return tasksList;
+}
+
+function onCardClick(event) {
+  console.log(event.action.parameters);
 }
 /**
  * Responds to an ADDED_TO_SPACE event in Hangouts Chat.
