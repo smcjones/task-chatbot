@@ -5,23 +5,9 @@
  * @param {Object} event the event object from Hangouts Chat
  */
 function onMessage(event: any) {
-  let tasks = [{
-    "id" : "12345",
-    "name" : "Task 1",
-    "description" : "This is my task 1",
-    "date": "2020-10-23"
-  },{
-    "id" : "4567",
-    "name" : "Task 2",
-    "description" : "This is my task 2",
-    "date": "2020-10-24"
-  },{
-    "id" : "891011", 
-    "name" : "Task 3",
-    "description" : "This is my task 3",
-    "date": "2020-10-25"
-  }]
-  let card = buildCard(tasks);
+  var taskListBuckets = listTaskLists();
+  let card = buildCard(taskListBuckets);
+  // console.log(card);
   return card;
 }
 
@@ -30,7 +16,7 @@ function buildCard(tasks: GoogleAppsScript.Tasks.Schema.Task[]) {
     "cards": [
       {
         "header": buildCardHeader(),
-        "sections": buildCardSections(tasks)
+        "sections": buildCardSections(taskListBuckets)
       }
     ]
   }
@@ -39,44 +25,70 @@ function buildCard(tasks: GoogleAppsScript.Tasks.Schema.Task[]) {
 
 function buildCardHeader(): Header {
   let header = {
-    "title": "Tasks List",
-    "subtitle": "The following tasks are due soon.",
-    "imageUrl": "https://goo.gl/aeDtrS"
+    'title': 'Tasks List',
+    'subtitle': 'The following tasks are due soon.',
+    'imageUrl': 'https://goo.gl/aeDtrS'
   };
   return header;
 }
 
 /**
  * Builds the sections of a card
- *
- * @param {Section[]} tasks a list of tasks from the Tasks API
- */
-function buildCardSections(tasks: GoogleAppsScript.Tasks.Schema.Task[]): Section[] {
-  const taskList = buildTaskListForCard(tasks);
-  let sections: Section[] = [
-    {
-      "widgets": taskList
-    },
-    {
-      "widgets": [
-        {
-          "buttons": [
-            {
-              "textButton": {
-                "text": "Schedule All",
-                "onClick": {
-                  "openLink": {
-                    "url": "https://example.com/orders/..."
-                  }
-                }
-              }
-            }
-          ]
-        }
-      ]
-    }
-  ]
+*/
+function buildCardSections(taskListBuckets) {
+  let sections = buildSectionTaskListWidgets(taskListBuckets);
+  //let scheduleAllButton = buildButtonWidget("Schedule All", "test", []);
+  //sections.push(scheduleAllButton)
   return sections;
+}
+
+function buildButtonWidget(text, action, parameters) {
+  var widgetButton = {
+    "widgets": [
+      {
+        "buttons": []
+      }
+    ]
+  };
+  widgetButton["widgets"][0].buttons.push(buildButton(text, action, parameters))
+  return widgetButton;
+}
+
+function buildButton(text, action, parameters) {
+  var button = {
+    "textButton": {
+      "text": text,
+      "onClick": {
+        "action": {
+          "actionMethodName": action,
+          "parameters": parameters
+        }
+      }
+    }
+  }
+  return button;
+}
+
+function buildSectionTaskListWidgets(taskListBuckets) {
+  let widgets = [];
+  for (let taskListName in taskListBuckets) {
+    let noDueDate = taskListBuckets[taskListName]["noDueDate"] ? taskListBuckets[taskListName]["noDueDate"] : [];
+    let dueLater = taskListBuckets[taskListName]["dueLater"] ? taskListBuckets[taskListName]["dueLater"] : [];
+    let dueSoon = taskListBuckets[taskListName]["dueSoon"] ? taskListBuckets[taskListName]["dueSoon"] : [];
+    let pastDue = taskListBuckets[taskListName]["pastDue"] ? taskListBuckets[taskListName]["pastDue"] : [];
+    let dueSoonTasks = buildTaskRows(dueSoon)
+    let pastDueTasks = buildTaskRows(pastDue)
+    let noDueDateTasks = buildTaskRows(noDueDate)
+    let widgetsContainer = {
+      "header" : taskListName,
+      "widgets": []
+    };
+    widgetsContainer.widgets.concat(dueSoonTasks);
+    widgetsContainer.widgets.concat(pastDueTasks);
+    widgetsContainer.widgets.concat(noDueDateTasks);
+    widgets.push(widgetsContainer);
+  }
+  return widgets;
 }
 
 /**
@@ -84,14 +96,15 @@ function buildCardSections(tasks: GoogleAppsScript.Tasks.Schema.Task[]): Section
  *
  * @param {List} tasks a list of tasks from the Tasks API
  */
-function buildTaskListForCard(tasks: GoogleAppsScript.Tasks.Schema.Task[]): TaskElement[] {
+function buildTaskRows(tasks) {
   const tasksList = tasks.map(function(t){
     let taskElement = {
       "keyValue": {
         "icon": "DESCRIPTION",
-        "topLabel": `${t.title} - ${t.id}`,
-        "content": `<b>Description:</b> ${t.notes} <br> Date: ${t.due}`
-      }
+        "topLabel": `${t.name} - ${t.id}`,
+        "content": `<b>Description:</b> ${t.description} <br> Date: ${t.date}`
+      },
+      "button": buildButton("Schedule", "test2", [])
     }
     return taskElement
   });
@@ -104,21 +117,22 @@ function buildTaskListForCard(tasks: GoogleAppsScript.Tasks.Schema.Task[]): Task
  * @param {Message} event the event object from Hangouts Chat
  */
 function onAddToSpace(event: any): Message {
-  var message = "";
+  var message = '';
 
   if (event.space.singleUserBotDm) {
-    message = "Thank you for adding me to a DM, " + event.user.displayName + "!";
+    message =
+        'Thank you for adding me to a DM, ' + event.user.displayName + '!';
   } else {
-    message = "Thank you for adding me to " +
-        (event.space.displayName ? event.space.displayName : "this chat");
+    message = 'Thank you for adding me to ' +
+        (event.space.displayName ? event.space.displayName : 'this chat');
   }
 
   if (event.message) {
     // Bot added through @mention.
-    message = message + " and you said: \"" + event.message.text + "\"";
+    message = message + ' and you said: "' + event.message.text + '"';
   }
 
-  return { "text": message };
+  return {'text': message};
 }
 
 /**
@@ -127,26 +141,24 @@ function onAddToSpace(event: any): Message {
  * @param {Object} event the event object from Hangouts Chat
  */
 function onRemoveFromSpace(event: any): void {
-  console.info("Bot removed from ",
-      (event.space.name ? event.space.name : "this chat"));
+  console.info(
+      'Bot removed from ', (event.space.name ? event.space.name : 'this chat'));
 }
 
 interface Header {
- title: string, 
- subtitle: string, 
- imageUrl: string 
+  title: string, subtitle: string, imageUrl: string
 }
 
 interface Section {
   widgets: TaskElement[],
 }
 interface TaskElement {
-  keyValue?: { 
-    icon:  string,
+  keyValue?: {
+    icon: string,
     topLabel: string,
     content: string,
   },
-  buttons?: Button[],
+      buttons?: Button[],
 }
 
 interface Message {
@@ -157,18 +169,12 @@ interface Button {
   textButton: {
     text: string,
     onClick: {
-      openLink?: {
-        url: string
-      }
-      action?: {
-        actionMethodName: string,
-        parameters: Parameter[]
-      }
+      openLink?: {url: string}
+      action?: {actionMethodName: string, parameters: Parameter[]}
     }
   }
 }
 
 interface Parameter {
-  key: string,
-  value: string,
+  key: string, value: string,
 }
