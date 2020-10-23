@@ -4,16 +4,16 @@
  *
  * @param {Object} event the event object from Hangouts Chat
  */
-import {TaskApp} from "./Tasks";
+import {TaskApp, BucketedTasks} from "./Tasks";
 
 function onMessage(event: any) {
-  var taskListBuckets = TaskApp.listTaskLists();
+  var taskListBuckets: BucketedTasks = TaskApp.listTaskLists();
   let card = buildCard(taskListBuckets);
   // console.log(card);
   return card;
 }
 
-function buildCard(tasks: GoogleAppsScript.Tasks.Schema.Task[]) {
+function buildCard(taskListBuckets: TaskList) {
   const card = {
     "cards": [
       {
@@ -37,7 +37,7 @@ function buildCardHeader(): Header {
 /**
  * Builds the sections of a card
 */
-function buildCardSections(taskListBuckets) {
+function buildCardSections(taskListBuckets: TaskList) {
   let sections = buildSectionTaskListWidgets(taskListBuckets);
   //let scheduleAllButton = buildButtonWidget("Schedule All", "test", []);
   //sections.push(scheduleAllButton)
@@ -71,25 +71,23 @@ function buildButton(text, action, parameters) {
   return button;
 }
 
-function buildSectionTaskListWidgets(taskListBuckets) {
+function buildSectionTaskListWidgets(taskListBuckets: BucketedTasks) {
   let widgets = [];
-  for (let taskListName in taskListBuckets) {
-    let noDueDate = taskListBuckets[taskListName]["noDueDate"] ? taskListBuckets[taskListName]["noDueDate"] : [];
-    let dueLater = taskListBuckets[taskListName]["dueLater"] ? taskListBuckets[taskListName]["dueLater"] : [];
-    let dueSoon = taskListBuckets[taskListName]["dueSoon"] ? taskListBuckets[taskListName]["dueSoon"] : [];
-    let pastDue = taskListBuckets[taskListName]["pastDue"] ? taskListBuckets[taskListName]["pastDue"] : [];
-    let dueSoonTasks = buildTaskRows(dueSoon)
-    let pastDueTasks = buildTaskRows(pastDue)
-    let noDueDateTasks = buildTaskRows(noDueDate)
-    let widgetsContainer = {
-      "header" : taskListName,
-      "widgets": []
-    };
-    widgetsContainer.widgets.concat(dueSoonTasks);
-    widgetsContainer.widgets.concat(pastDueTasks);
-    widgetsContainer.widgets.concat(noDueDateTasks);
-    widgets.push(widgetsContainer);
-  }
+  let noDueDate = taskListBuckets.noDueDate || [];
+  let dueLater = taskListBuckets.dueLater || [];
+  let dueSoon = taskListBuckets.dueSoon || [];
+  let pastDue = taskListBuckets.pastDue || [];
+  let dueSoonTasks = buildTaskRows(dueSoon);
+  let pastDueTasks = buildTaskRows(pastDue);
+  let noDueDateTasks = buildTaskRows(noDueDate);
+  let widgetsContainer = {
+    "header": "Tasks",
+    "widgets": []
+  };
+  widgetsContainer.widgets.concat(dueSoonTasks);
+  widgetsContainer.widgets.concat(pastDueTasks);
+  widgetsContainer.widgets.concat(noDueDateTasks);
+  widgets.push(widgetsContainer);
   return widgets;
 }
 
