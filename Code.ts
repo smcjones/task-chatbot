@@ -97,16 +97,27 @@ function buildSectionTaskListWidgets(taskListBuckets: BucketedTasks) {
  * @param {List} tasks a list of tasks from the Tasks API
  */
 function buildTaskRows(tasks) {
-  const tasksList = tasks.map(function(t){
-    let taskElement = {
+   const tasksList = tasks.map(function (t) {
+    const messages = [
+      t.getNotes() ? "Description: " + t.getNotes() : "",
+      "Due Date: " + (t.due || "No Due Date"),
+    ];
+    const taskElement = {
       "keyValue": {
         "icon": "DESCRIPTION",
-        "topLabel": `${t.name} - ${t.id}`,
-        "content": `<b>Description:</b> ${t.description} <br> Date: ${t.date}`
-      },
-      "button": buildButton("Schedule", "test2", [])
-    }
-    return taskElement
+        "topLabel": `${t.title}`,
+        "content":  messages.filter(v => v).join('<BR>'),
+        "button": buildButton("Schedule", "test2", [{
+          key: "title",
+          value: t.title,
+        },
+        {
+          key: "date",
+          value: t.due,  
+        }])
+      }
+    };
+    return taskElement;
   });
   return tasksList;
 }
@@ -143,6 +154,11 @@ function onAddToSpace(event: any): Message {
 function onRemoveFromSpace(event: any): void {
   console.info(
       'Bot removed from ', (event.space.name ? event.space.name : 'this chat'));
+}
+
+function onCardClick(event) {
+  console.log(event.action.parameters);
+  return {"text" : "Your task was scheduled successfully!"}
 }
 
 interface Header {
