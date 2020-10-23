@@ -88,7 +88,7 @@ function buildTaskRows(tasks) {
   const tasksList = tasks.map(function (t) {
     const messages = [
       t.getNotes() ? "Description: " + t.getNotes() : "",
-      "Due Date: " + t.due || "No Due Date",
+      "Due Date: " + (t.due || "No Due Date"),
     ];
     const taskElement = {
       "keyValue": {
