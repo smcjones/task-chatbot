@@ -9,16 +9,26 @@ export class TaskApp {
   /**
    * Returns the results of listTasks by tasklist.
    */
-  listTaskLists(): TaskList {
+  listTaskLists(): BucketedTasks {
+    const taskListBucket: BucketedTasks = {
+      pastDue: [],
+      dueSoon: [],
+      dueLater: [],
+      noDueDate: [],
+    };
+
     const taskLists = Tasks.Tasklists.list();
-    const taskListBuckets = {};
     if (taskLists.items) {
       for (let i = 0; i < taskLists.items.length; i++) {
         const taskList = taskLists.items[i];
-        taskListBuckets[taskList.title] = this.listTasks(taskList.id);
+        const localBucket = this.listTasks(taskList.id);
+        taskListBucket.pastDue.concat(localBucket.pastDue);
+        taskListBucket.dueSoon.concat(localBucket.dueSoon);
+        taskListBucket.dueLater.concat(localBucket.dueLater);
+        taskListBucket.noDueDate.concat(localBucket.noDueDate);
       }
     }
-    return taskListBuckets;
+    return taskListBucket;
   }
 
   /**
@@ -84,13 +94,9 @@ export class TaskApp {
   }
 }
 
-interface TaskList {
-  [key: string]: BucketedTasks
-}
-
-interface BucketedTasks {
-  pastDue: Task[],
-  dueSoon: Task[],
-  dueLater: Task[],
-  noDueDate: Task[],
+export interface BucketedTasks {
+  pastDue: GoogleAppsScript.Tasks.Schema.Task[],
+  dueSoon: GoogleAppsScript.Tasks.Schema.Task[],[],
+  dueLater: GoogleAppsScript.Tasks.Schema.Task[],
+  noDueDate: GoogleAppsScript.Tasks.Schema.Task[],
 }

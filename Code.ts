@@ -4,8 +4,10 @@
  *
  * @param {Object} event the event object from Hangouts Chat
  */
+import {TaskApp} from "./Tasks";
+
 function onMessage(event: any) {
-  var taskListBuckets = listTaskLists();
+  var taskListBuckets = TaskApp.listTaskLists();
   let card = buildCard(taskListBuckets);
   // console.log(card);
   return card;
