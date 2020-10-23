@@ -4,7 +4,7 @@
  *
  * @param {Object} event the event object from Hangouts Chat
  */
-function onMessage(event) {
+function onMessage(event: any) {
   let tasks = [{
     "id" : "12345",
     "name" : "Task 1",
@@ -16,7 +16,7 @@ function onMessage(event) {
     "description" : "This is my task 2",
     "date": "2020-10-24"
   },{
-    "id" : "891011",
+    "id" : "891011", 
     "name" : "Task 3",
     "description" : "This is my task 3",
     "date": "2020-10-25"
@@ -25,7 +25,7 @@ function onMessage(event) {
   return card;
 }
 
-function buildCard(tasks) {
+function buildCard(tasks: GoogleAppsScript.Tasks.Schema.Task[]) {
   const card = {
     "cards": [
       {
@@ -37,7 +37,7 @@ function buildCard(tasks) {
   return card;
 }
 
-function buildCardHeader() {
+function buildCardHeader(): Header {
   let header = {
     "title": "Tasks List",
     "subtitle": "The following tasks are due soon.",
@@ -49,11 +49,11 @@ function buildCardHeader() {
 /**
  * Builds the sections of a card
  *
- * @param {List} tasks a list of tasks from the Tasks API
+ * @param {Section[]} tasks a list of tasks from the Tasks API
  */
-function buildCardSections(tasks) {
+function buildCardSections(tasks: GoogleAppsScript.Tasks.Schema.Task[]): Section[] {
   const taskList = buildTaskListForCard(tasks);
-  let sections = [
+  let sections: Section[] = [
     {
       "widgets": taskList
     },
@@ -84,13 +84,13 @@ function buildCardSections(tasks) {
  *
  * @param {List} tasks a list of tasks from the Tasks API
  */
-function buildTaskListForCard(tasks) {
+function buildTaskListForCard(tasks: GoogleAppsScript.Tasks.Schema.Task[]): TaskElement[] {
   const tasksList = tasks.map(function(t){
     let taskElement = {
       "keyValue": {
         "icon": "DESCRIPTION",
-        "topLabel": `${t.name} - ${t.id}`,
-        "content": `<b>Description:</b> ${t.description} <br> Date: ${t.date}`
+        "topLabel": `${t.title} - ${t.id}`,
+        "content": `<b>Description:</b> ${t.notes} <br> Date: ${t.due}`
       }
     }
     return taskElement
@@ -101,9 +101,9 @@ function buildTaskListForCard(tasks) {
 /**
  * Responds to an ADDED_TO_SPACE event in Hangouts Chat.
  *
- * @param {Object} event the event object from Hangouts Chat
+ * @param {Message} event the event object from Hangouts Chat
  */
-function onAddToSpace(event) {
+function onAddToSpace(event: any): Message {
   var message = "";
 
   if (event.space.singleUserBotDm) {
@@ -126,7 +126,49 @@ function onAddToSpace(event) {
  *
  * @param {Object} event the event object from Hangouts Chat
  */
-function onRemoveFromSpace(event) {
+function onRemoveFromSpace(event: any): void {
   console.info("Bot removed from ",
       (event.space.name ? event.space.name : "this chat"));
+}
+
+interface Header {
+ title: string, 
+ subtitle: string, 
+ imageUrl: string 
+}
+
+interface Section {
+  widgets: TaskElement[],
+}
+interface TaskElement {
+  keyValue?: { 
+    icon:  string,
+    topLabel: string,
+    content: string,
+  },
+  buttons?: Button[],
+}
+
+interface Message {
+  text: string,
+}
+
+interface Button {
+  textButton: {
+    text: string,
+    onClick: {
+      openLink?: {
+        url: string
+      }
+      action?: {
+        actionMethodName: string,
+        parameters: Parameter[]
+      }
+    }
+  }
+}
+
+interface Parameter {
+  key: string,
+  value: string,
 }
