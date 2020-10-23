@@ -49,25 +49,35 @@ function onMessage(event) {
               }
             ]
           },
-          {
-            "widgets": [
-                {
-                    "buttons": [
-                      {
-                        "textButton": {
-                          "text": "OPEN ORDER",
-                          "onClick": {
-                            "openLink": {
-                              "url": "https://example.com/orders/..."
-                            }
-                          }
-                        }
-                      }
-                    ]
-                }
-            ]
-          }
-        ]
+	  {
+	      "widgets": [
+	      {
+		  "buttons": [
+		  {
+		      "textButton": {
+			  "text": "Click Me",
+			  "onClick": {
+			      "action": {
+				  "actionMethodName": "snooze",
+				  "parameters": [
+				  {
+				      "key": "time",
+				      "value": "1 day"
+				  },
+				  {
+				      "key": "id",
+				      "value": "123456"
+				  }
+				  ]
+			      }
+			  }
+		      }
+		  }
+		  ]
+	      }
+	      ]
+	  }
+	]
       }
     ]
   }
