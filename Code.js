@@ -5,86 +5,97 @@
  * @param {Object} event the event object from Hangouts Chat
  */
 function onMessage(event) {
-  var name = "";
+  let tasks = [{
+    "id" : "12345",
+    "name" : "Task 1",
+    "description" : "This is my task 1",
+    "date": "2020-10-23"
+  },{
+    "id" : "4567",
+    "name" : "Task 2",
+    "description" : "This is my task 2",
+    "date": "2020-10-24"
+  },{
+    "id" : "891011",
+    "name" : "Task 3",
+    "description" : "This is my task 3",
+    "date": "2020-10-25"
+  }]
+  let card = buildCard(tasks);
+  return card;
+}
 
-  if (event.space.type == "DM") {
-    name = "You";
-  } else {
-    name = event.user.displayName;
-  }
-  var message = name + " said \"" + event.message.text + "\"";
-
-  var card = {
+function buildCard(tasks) {
+  const card = {
     "cards": [
       {
-        "header": {
-          "title": "Chatbot",
-          "subtitle": "task-chatbot@google.com",
-          "imageUrl": "https://fonts.gstatic.com/s/i/productlogos/tasks/v5/web-24dp/logo_tasks_color_1x_web_24dp.png"
-        },
-        "sections": [
-          {
-            "widgets": [
-                {
-                  "keyValue": {
-                    "topLabel": "Order No.",
-                    "content": "12345"
-                    }
-                },
-                {
-                  "keyValue": {
-                    "topLabel": "Status",
-                    "content": "In Delivery"
-                  }
-                }
-            ]
-          },
-          {
-            "header": "Location",
-            "widgets": [
-              {
-                "image": {
-                  "imageUrl": "https://maps.googleapis.com/..."
-                }
-              }
-            ]
-          },
-	  {
-	      "widgets": [
-	      {
-		  "buttons": [
-		  {
-		      "textButton": {
-			  "text": "Click Me",
-			  "onClick": {
-			      "action": {
-				  "actionMethodName": "snooze",
-				  "parameters": [
-				  {
-				      "key": "time",
-				      "value": "1 day"
-				  },
-				  {
-				      "key": "id",
-				      "value": "123456"
-				  }
-				  ]
-			      }
-			  }
-		      }
-		  }
-		  ]
-	      }
-	      ]
-	  }
-	]
+        "header": buildCardHeader(),
+        "sections": buildCardSections(tasks)
       }
     ]
   }
-
-  var text = { "text": 'THIS IS A' }
-
   return card;
+}
+
+function buildCardHeader() {
+  let header = {
+    "title": "Tasks List",
+    "subtitle": "The following tasks are due soon.",
+    "imageUrl": "https://goo.gl/aeDtrS"
+  };
+  return header;
+}
+
+/**
+ * Builds the sections of a card
+ *
+ * @param {List} tasks a list of tasks from the Tasks API
+ */
+function buildCardSections(tasks) {
+  const taskList = buildTaskListForCard(tasks);
+  let sections = [
+    {
+      "widgets": taskList
+    },
+    {
+      "widgets": [
+        {
+          "buttons": [
+            {
+              "textButton": {
+                "text": "Schedule All",
+                "onClick": {
+                  "openLink": {
+                    "url": "https://example.com/orders/..."
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+  return sections;
+}
+
+/**
+ * Builds a list of tasks to show to the user
+ *
+ * @param {List} tasks a list of tasks from the Tasks API
+ */
+function buildTaskListForCard(tasks) {
+  const tasksList = tasks.map(function(t){
+    let taskElement = {
+      "keyValue": {
+        "icon": "DESCRIPTION",
+        "topLabel": `${t.name} - ${t.id}`,
+        "content": `<b>Description:</b> ${t.description} <br> Date: ${t.date}`
+      }
+    }
+    return taskElement
+  });
+  return tasksList;
 }
 
 /**
