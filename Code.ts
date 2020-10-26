@@ -1,100 +1,134 @@
+// Compiled using ts2gas 3.6.3 (TypeScript 3.9.7)
+var exports = exports || {};
+var module = module || { exports: exports };
+//import {listTaskLists, BucketedTasks} from "./Tasks";
 /**
- * Development ID: AKfycby63MCjL7fELUmapeVKLUoQ4Dbqp1GYraOQFnmjuq44\
- * Responds to a MESSAGE event in Hangouts Chat.
+ * Responds to a ON_MESSAGE event in Hangouts Chat.
  *
  * @param {Object} event the event object from Hangouts Chat
- */
-import {TaskApp, BucketedTasks} from "./Tasks";
-import {CalendarService} from  'lib/calendarService';
-
-function getCalendar() {
-  const calendarService = new CalendarService('joaoaleixo@google.com', 'https://www.googleapis.com/calendar/v3');
-  calendarService.createEvent('hackathon', 'something');
-}
-
-function onMessage(event: any) {
-  var taskListBuckets: BucketedTasks = TaskApp.listTaskLists();
-  let card = buildCard(taskListBuckets);
-  // console.log(card);
-  return card;
-}
-
-function buildCard(taskListBuckets: TaskList) {
-  const card = {
-    "cards": [
-      {
-        "header": buildCardHeader(),
-        "sections": buildCardSections(taskListBuckets)
-      }
-    ]
-  }
-  return card;
-}
-
-function buildCardHeader(): Header {
-  let header = {
-    'title': 'Tasks List',
-    'subtitle': 'The following tasks are due soon.',
-    'imageUrl': 'https://goo.gl/aeDtrS'
-  };
-  return header;
+*/
+function onMessage(event) {
+    var taskListBuckets = listTaskLists();
+    var card = buildCard(taskListBuckets);
+    return card;
 }
 
 /**
- * Builds the sections of a card
+ * Builds the tasks card displayed in Hangouts Chat.
 */
-function buildCardSections(taskListBuckets: TaskList) {
-  let sections = buildSectionTaskListWidgets(taskListBuckets);
-  //let scheduleAllButton = buildButtonWidget("Schedule All", "test", []);
-  //sections.push(scheduleAllButton)
-  return sections;
+function buildCard(taskListBuckets) {
+    var card = {
+        "cards": [
+            {
+                "header": buildCardHeader(),
+                "sections": buildCardSections(taskListBuckets)
+            }
+        ]
+    };
+    return card;
 }
 
-function buildButtonWidget(text, action, parameters) {
-  var widgetButton = {
-    "widgets": [
-      {
-        "buttons": []
-      }
-    ]
-  };
-  widgetButton["widgets"][0].buttons.push(buildButton(text, action, parameters))
-  return widgetButton;
+/**
+ * Builds the header for the tasks card displayed in Hangouts Chat.
+*/
+function buildCardHeader() {
+    var header = {
+        'title': 'Task Scheduler Bot',
+        'subtitle': 'Hi there! Would you like to schedule a task?',
+        'imageUrl': 'https://goo.gl/aeDtrS'
+    };
+    return header;
+}
+/**
+ * Builds the sections for the tasks card displayed in Hangouts Chat.
+*/
+function buildCardSections(taskListBuckets) {
+    var sections = buildSectionTaskListWidgets(taskListBuckets);
+    var footerButtonWidget = buildFooterButtonWidget(taskListBuckets);
+    sections.push(footerButtonWidget);
+    return sections;
 }
 
-function buildButton(text, action, parameters) {
-  var button = {
+/**
+ * Builds the footer for the widgets
+*/
+function buildFooterButtonWidget() {
+    var footerButtonWidget = {
+        "widgets": [
+            {
+                "buttons": buildFooterButtons()
+            }
+        ]
+    };
+    return footerButtonWidget;
+}
+
+/**
+ * Builds the footer buttons for the widgets.
+*/
+function buildFooterButtons() {
+  var scheduleButton = {
     "textButton": {
-      "text": text,
-      "onClick": {
-        "action": {
-          "actionMethodName": action,
-          "parameters": parameters
+        "text": "Schedule All",
+        "onClick": {
+            action : {
+                "actionMethodName": "SCHEDULE_ALL",
+                "parameters": []
+            }
         }
+    }
+  };
+  var openButton = {
+    "textButton": {
+      "text": "Open Tasks in UI",
+      "onClick": {
+        "openLink": { "url": "https://tasks.google.com/embed/list" }
       }
     }
-  }
-  return button;
+  };
+  return [scheduleButton, openButton];
 }
 
-function buildSectionTaskListWidgets(taskListBuckets: BucketedTasks) {
-  let widgets = [];
-  let noDueDate = taskListBuckets.noDueDate || [];
-  let dueLater = taskListBuckets.dueLater || [];
-  let dueSoon = taskListBuckets.dueSoon || [];
-  let pastDue = taskListBuckets.pastDue || [];
-  let dueSoonTasks = buildTaskRows(dueSoon);
-  let pastDueTasks = buildTaskRows(pastDue);
-  let noDueDateTasks = buildTaskRows(noDueDate);
-  let widgetsContainer = {
-    "header": "Tasks",
-    "widgets": []
-  };
-  widgetsContainer.widgets.concat(dueSoonTasks);
-  widgetsContainer.widgets.concat(pastDueTasks);
-  widgetsContainer.widgets.concat(noDueDateTasks);
-  widgets.push(widgetsContainer);
-  return widgets;
+/**
+ * Builds the button to execute a specific action.
+*/
+function buildButtonForAction(text, action, parameters) {
+    var button = {
+        "imageButton": {
+            "text": text,
+            "icon": "INVITE",
+            "onClick": {
+                "action": {
+                    "actionMethodName": action,
+                    "parameters": parameters
+                }
+            }
+        }
+    };
+    return button;
+}
+
+/**
+ * Builds the section task list widgets for the tasks card displayed in Hangouts Chat.
+*/
+function buildSectionTaskListWidgets(taskListBuckets) {
+    var widgets = [];
+    var noDueDate = taskListBuckets.noDueDate || [];
+    var noDueDateTasks = buildTaskRows(noDueDate, "No Due Date");
+    var dueLater = taskListBuckets.dueLater || [];
+    var dueLaterTasks = buildTaskRows(dueLater, "Due Later");
+    var dueSoon = taskListBuckets.dueSoon || [];
+    var dueSoonTasks = buildTaskRows(dueSoon, "Due Soon");
+    var pastDue = taskListBuckets.pastDue || [];
+    var pastDueTasks = buildTaskRows(pastDue, "Past Due");
+    var allTasks = [];
+    allTasks = allTasks.concat(dueSoonTasks, pastDueTasks, noDueDateTasks, dueLaterTasks);
+    var widgetsContainer = {
+        "header": "My Tasks",
+        "widgets": allTasks
+    };
+    widgets.push(widgetsContainer);
+    return widgets;
 }
 
 /**
@@ -102,54 +136,166 @@ function buildSectionTaskListWidgets(taskListBuckets: BucketedTasks) {
  *
  * @param {List} tasks a list of tasks from the Tasks API
  */
-function buildTaskRows(tasks) {
-   const tasksList = tasks.map(function (t) {
-    const messages = [
-      t.getNotes() ? "Description: " + t.getNotes() : "",
-      "Due Date: " + (t.due || "No Due Date"),
+function buildTaskRows(tasks, status) {
+  var tasksList = tasks.map(function (t) {
+    if(!t.title)
+      return
+    var taskDate = null;
+    if(t.due) {
+      taskDate = new Date(t.due);
+    }
+    console.log(t.title);
+    console.log(t.due);
+    console.log(t.getParent())
+    var messages = [
+      t.getNotes() ? "<b>Description:</b> " + t.getNotes() : "",
+      "<b>Due Date: </b>" + (taskDate ? taskDate.toLocaleString() : "No Due Date"),
+      "<b>Status: </b>" + status
     ];
-    const taskElement = {
+    var taskElement = {
       "keyValue": {
         "icon": "DESCRIPTION",
-        "topLabel": `${t.title}`,
+        "topLabel": t.title,
         "content":  messages.filter(v => v).join('<BR>'),
-        "button": buildButton("Schedule", "test2", [{
+        "contentMultiline": "true",
+        "bottomLabel": "------------------------------------------------------------",
+        "button": buildButtonForAction("Schedule", "SCHEDULE_SINGLE", [{
           key: "title",
-          value: t.title,
+          value: t.title ,
         },
         {
           key: "date",
-          value: t.due,
+          value: t.due,  
         }])
       }
     };
     return taskElement;
   });
-  return tasksList;
+  return tasksList
 }
 
 /**
- * Responds to an ADDED_TO_SPACE event in Hangouts Chat.
+ * Builds the task row buttons for the tasks card displayed in Hangouts Chat.
+*/
+function buildTaskRowButtons(taskId, taskTitle, taskDue) {
+  var buttons = [];
+  var params = [{
+    key: "id",
+    value: taskId,
+  },{
+    key: "title",
+    value: taskTitle,
+  },
+  {
+    key: "date",
+    value: taskDue,  
+  }];
+  var buttonObjs = {
+    "SCHEDULE_SINGLE" : {
+      "buttonLabel" : "Schedule",
+      "params" : params
+    }
+  };
+  for(var buttonAction in buttonObjs) {
+    var obj = buttonObjs[buttonAction];
+    var button = buildButtonForAction(obj.buttonLabel, buttonAction, params);
+    buttons.push(button);
+  }
+  return buttons
+}
+
+/**
+ * Responds to an ON_CARD_CLICK event in Hangouts Chat.
+ *
+ * @param {Message} event the event object from Hangouts Chat
+*/
+function onCardClick(event) {
+  console.log(event);
+  var user = event.user.email;
+  var parameters = event.action.parameters;
+  if(event.action.actionMethodName && event.action.actionMethodName === "SCHEDULE_SINGLE") {
+    return scheduleSingleTask(parameters, user)
+  } else {
+    return scheduleAllTasks(user)
+  }
+}
+
+/**
+ * Schedules a single task using the task due date.
+*/
+function scheduleSingleTask(parameters, user) {
+    var task = {
+      "user": user
+    };
+    for(var i = 0; i < parameters.length; i++) {
+      var param = parameters[i];
+      switch(param.key) {
+        case "id":
+          task["id"] = param.value
+          break;
+        case "title":
+          task["title"] = param.value
+          break;
+        case "date":
+          task["date"] = param.value
+          break;
+        default:
+          break;
+      }
+    }
+    console.log(task)
+    var taskDate = new Date(task.date);
+    // scheduleTasksOnCalendar([task]);
+    return {"text" : `Your task ${task.title} was scheduled on ${taskDate.toLocaleString()} successfully!`}
+}
+
+/**
+ * Schedules all tasks using the tasks due date.
+*/
+function scheduleAllTasks(user) {
+    var taskListBuckets = listTaskLists();
+    var taskList = [];
+    for(var taskBucket in taskListBuckets) {
+      var tasks = taskListBuckets[taskBucket];
+      for(var i = 0; i < tasks.length; i++) {
+        var t = tasks[i];
+        if(!t.title)
+          continue;
+        var taskToSchedule = {
+          "user": user
+        };
+        taskToSchedule["id"] = t.id;
+        taskToSchedule["title"] = t.title;
+        taskToSchedule["date"] = t.due;
+        taskToSchedule["user"] = user;
+        console.log(taskToSchedule);
+        taskList.push(taskToSchedule);  
+      }
+    }
+    // scheduleTasksOnCalendar(taskList);
+    return {"text" : `All your tasks were scheduled successfully!`}
+}
+
+/**
+ * Responds to an ADDED_TO_SPACE event in Hangouts Chat..
  *
  * @param {Message} event the event object from Hangouts Chat
  */
-function onAddToSpace(event: any): Message {
-  var message = '';
-
-  if (event.space.singleUserBotDm) {
-    message =
-        'Thank you for adding me to a DM, ' + event.user.displayName + '!';
-  } else {
-    message = 'Thank you for adding me to ' +
-        (event.space.displayName ? event.space.displayName : 'this chat');
-  }
-
-  if (event.message) {
-    // Bot added through @mention.
-    message = message + ' and you said: "' + event.message.text + '"';
-  }
-
-  return {'text': message};
+function onAddToSpace(event) {
+    var message = '';
+    if (event.space.singleUserBotDm) {
+        message =
+            'Thank you for adding me to a DM, ' + event.user.displayName + '!';
+    }
+    else {
+        message = 'Thank you for adding me to ' +
+            (event.space.displayName ? event.space.displayName : 'this chat');
+    }
+    if (event.message) {
+        // Bot added through @mention.
+        message = message + ' and you said: "' + event.message.text + '"';
+    }
+    return { 'text': message };
 }
 
 /**
@@ -157,46 +303,6 @@ function onAddToSpace(event: any): Message {
  *
  * @param {Object} event the event object from Hangouts Chat
  */
-function onRemoveFromSpace(event: any): void {
-  console.info(
-      'Bot removed from ', (event.space.name ? event.space.name : 'this chat'));
-}
-
-function onCardClick(event) {
-  console.log(event.action.parameters);
-  return {"text" : "Your task was scheduled successfully!"}
-}
-
-interface Header {
-  title: string, subtitle: string, imageUrl: string
-}
-
-interface Section {
-  widgets: TaskElement[],
-}
-interface TaskElement {
-  keyValue?: {
-    icon: string,
-    topLabel: string,
-    content: string,
-  },
-      buttons?: Button[],
-}
-
-interface Message {
-  text: string,
-}
-
-interface Button {
-  textButton: {
-    text: string,
-    onClick: {
-      openLink?: {url: string}
-      action?: {actionMethodName: string, parameters: Parameter[]}
-    }
-  }
-}
-
-interface Parameter {
-  key: string, value: string,
+function onRemoveFromSpace(event) {
+    console.info('Bot removed from ', (event.space.name ? event.space.name : 'this chat'));
 }
