@@ -39,7 +39,7 @@ function buildCardHeader() {
     var header = {
         'title': 'Task Scheduler Bot',
         'subtitle': 'Hi there! Would you like to schedule a task?',
-        'imageUrl': 'https://goo.gl/aeDtrS'
+        'imageUrl': 'https://fonts.gstatic.com/s/i/productlogos/tasks/v5/web-24dp/logo_tasks_color_1x_web_24dp.png'
     };
     return header;
 }
