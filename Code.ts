@@ -4,6 +4,9 @@ var module = module || { exports: exports };
 // Compiled using ts2gas 3.6.3 (TypeScript 3.9.7)
 var exports = exports || {};
 var module = module || { exports: exports };
+// Compiled using ts2gas 3.6.3 (TypeScript 3.9.7)
+var exports = exports || {};
+var module = module || { exports: exports };
 //import {listTaskLists, BucketedTasks} from "./Tasks";
 /**
  * Responds to a ON_MESSAGE event in Hangouts Chat.
@@ -239,11 +242,11 @@ function scheduleSingleTask(parameters, user) {
     }
     console.log(task);
     var taskDateStr = "the next day";
-    if(task.date) {
-      var taskDate = new Date(task.date);
-      taskDateStr = taskDate.toLocaleString()
+    if (task.date) {
+        var taskDate = new Date(task.date);
+        taskDateStr = taskDate.toLocaleString();
     }
-    // scheduleTasksOnCalendar([task]);
+    scheduleTasksOnCalendar([task]);
     return { "text": "Your task " + task.title + " was scheduled on " + taskDateStr + " successfully!" };
 }
 /**
@@ -269,48 +272,46 @@ function scheduleAllTasks(user) {
             taskList.push(taskToSchedule);
         }
     }
-    // scheduleTasksOnCalendar(taskList);
+    scheduleTasksOnCalendar(taskList);
     return { "text": "All your tasks were scheduled successfully!" };
 }
-
 /**
  * Schedules tasks on the calendar.
 */
 function scheduleTasksOnCalendar(tasks) {
-/*
-{ user: 'anaesqueda@google.com',
-  id: 'TDBBQ0ZMVmZBVEllRmNQQQ',
-  title: 'Task test 1',
-  date: '2020-10-20T00:00:00.000Z' }
- */
-  var task1 = {
-    "user": "anaesqueda@google.com",
-    "id" : "1234",
-    "title": "Test task on Calendar!!!!!!",
-    "date": "2020-10-20T00:00:00.000Z"
-  }
-  tasks = [task1];
-  for(var i = 0; i< tasks.length; i++) {
-    var task = tasks[i];
-    var startDateStr = "";
-    var endDateStr = "";
-    if(task.date) {
-      var startDate = new Date(task.date);
-      var endDate = new Date(task.date);
-      console.log(endDate.getHours());
-      endDate.setHours(endDate.getHours() + 1);
-      console.log(endDate.getHours());
-      // -- 
-      startDateStr = startDate.toISOString();
-      endDateStr = endDate.toISOString();
-      console.log(startDateStr);
-      console.log(endDateStr);
+    /*
+    { user: 'anaesqueda@google.com',
+      id: 'TDBBQ0ZMVmZBVEllRmNQQQ',
+      title: 'Task test 1',
+      date: '2020-10-20T00:00:00.000Z' }
+     */
+    /*var task1 = {
+        "user": "anaesqueda@google.com",
+        "id": "1234",
+        "title": "Test task on Calendar!!!!!!",
+        "date": "2020-10-26T00:00:00.000Z"
+    };
+    tasks = [task1];*/
+    for (var i = 0; i < tasks.length; i++) {
+        var task = tasks[i];
+        var startDateStr = "";
+        var endDateStr = "";
+        if (task.date) {
+            var startDate = new Date(task.date);
+            var endDate = new Date(task.date);
+            console.log(endDate.getHours());
+            endDate.setHours(endDate.getHours() + 1);
+            console.log(endDate.getHours());
+            // -- 
+            startDateStr = startDate.toISOString();
+            endDateStr = endDate.toISOString();
+            console.log(startDateStr);
+            console.log(endDateStr);
+        }
+        var calendarService = new CalendarService(task.user, 'https://www.googleapis.com/calendar/v3');
+        calendarService.createEvent(task.title, 'This is the task description', startDateStr, endDateStr);
     }
-    var calendarService = new CalendarService(task.user, 'https://www.googleapis.com/calendar/v3');
-    calendarService.createEvent(task.title, startDateStr, endDateStr, 'This is the task description');
-  }
 }
-
 /**
  * Responds to an ADDED_TO_SPACE event in Hangouts Chat..
  *
