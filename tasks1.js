@@ -1,4 +1,3 @@
-/*
 function listTaskLists() {
         var taskListBucket = {
             pastDue: [],
@@ -53,4 +52,4 @@ listTasks = function (taskListId) {
         }
     }
     return result;
-};*/
+};
