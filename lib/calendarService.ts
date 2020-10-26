@@ -43,9 +43,9 @@ export class CalendarService {
     return JSON.parse(UrlFetchApp.fetch(this.endpoint + '/calendars/' + this.ldap, params));
   }
 
-  public createEvent = (name, description) => {
-    const startDate = '2020-10-23T20:00:00-03:00';
-    const endDate = '2020-10-23T21:00:00-03:00';
+  public createEvent = (name, description, startDate, endDate) => {
+    //const startDate = '2020-10-23T20:00:00-03:00';
+    //const endDate = '2020-10-23T21:00:00-03:00';
 
     const calendar = this.getUserCalendar();
 
