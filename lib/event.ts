@@ -11,7 +11,7 @@ export class Event {
   private timezone: string;
 
   private checkDate = (date: string, hour: number) => {
-    if(date == null || date.trim().length < 0){
+    if(date == null || date.trim().length <= 0){
       return this.getTomorrowDate();
     }
 
