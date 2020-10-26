@@ -5,6 +5,12 @@
  * @param {Object} event the event object from Hangouts Chat
  */
 import {TaskApp, BucketedTasks} from "./Tasks";
+import {CalendarService} from  'lib/calendarService';
+
+function getCalendar() {
+  const calendarService = new CalendarService('joaoaleixo@google.com', 'https://www.googleapis.com/calendar/v3');
+  calendarService.createEvent('hackathon', 'something');
+}
 
 function onMessage(event: any) {
   var taskListBuckets: BucketedTasks = TaskApp.listTaskLists();
@@ -113,7 +119,7 @@ function buildTaskRows(tasks) {
         },
         {
           key: "date",
-          value: t.due,  
+          value: t.due,
         }])
       }
     };
