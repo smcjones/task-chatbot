@@ -15,7 +15,7 @@ export function listTaskLists(): BucketedTasks {
   if (taskLists.items) {
     for (let i = 0; i < taskLists.items.length; i++) {
       const taskList = taskLists.items[i];
-      const localBucket = this.listTasks(taskList.id);
+      const localBucket = listTasks(taskList.id);
       taskListBucket.pastDue.concat(localBucket.pastDue);
       taskListBucket.dueSoon.concat(localBucket.dueSoon);
       taskListBucket.dueLater.concat(localBucket.dueLater);
