@@ -45,8 +45,8 @@ export class TaskApp {
     if (tasks.items) {
       for (let i = 0; i < tasks.items.length; i++) {
         const task = tasks.items[i];
-        const now: number = new Date().getMilliseconds();
-        const taskDueDate: number = task.due ? new Date(task.due).getMilliseconds() : null;
+        const now: number = new Date().getTime();
+        const taskDueDate: number = task.due ? new Date(task.due).getTime() : null;
         if (taskDueDate === null) {
           result["noDueDate"] = result["noDueDate"] || [];
           result["noDueDate"].push(task);
